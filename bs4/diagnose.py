@@ -53,7 +53,7 @@ def diagnose(data):
                 "html5lib is not installed or couldn't be imported.")
 
     if hasattr(data, 'read'):
-        data = data.read()
+        data = data.read
     elif os.path.exists(data):
         print('"%s" looks like a filename. Reading data from the file.' % data)
         data = open(data).read()
@@ -213,4 +213,4 @@ def profile(num_elements=100000, parser="lxml"):
     stats.print_stats('_html5lib|bs4', 50)
 
 if __name__ == '__main__':
-    diagnose(sys.stdin.read())
+    diagnose(sys.stdin.read)

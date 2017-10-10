@@ -1,6 +1,17 @@
 import sys
-digit_string = sys.argv[1]
-s = 0 #sum of digits
-for d in digit_string:
-    s += int(d)
-print (s)
+
+file = str(sys.argv[1])
+
+class FileReader:
+    def __init__(self, file):
+        self.address = file
+
+    def read(self):
+        try:
+            with open(self.address) as f:
+                return f.read().replace('\n', '')
+        except IOError:
+            return ''
+
+reader = FileReader(file)
+print(reader.read())

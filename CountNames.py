@@ -10,7 +10,7 @@ url = 'http://py4e-data.dr-chuck.net/known_by_Madisen.html'
 
 def getname():
     global url
-    html = urllib.request.urlopen(url, context=ctx).read()
+    html = urllib.request.urlopen(url, context=ctx).read
     soup = BeautifulSoup(html, 'html.parser')
     tags = soup('a')
     url = tags[17].get('href', None)
