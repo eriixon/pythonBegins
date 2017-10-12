@@ -1,7 +1,22 @@
+import os
+import tempfile
+
 class File:
     def __init__(self, file_path):
         self.file_path = file_path
+        if not os.path.exists(file_path):
+            self.file_path = self.get_file(self)
         self.file_dict = self.getDictonary()
+
+    def get_file(self):
+        new_path = os.path.join(tempfile.gettempdir(), self.file_path+'file.txt')
+        with open(new_path, 'w') as f:
+            f.write(self.file_path)
+        return new_path
+
+    def __add__(self, other):
+        #TODO
+        return self.file_dict + other.file_dict
 
     def __str__(self):
         return self.file_path
@@ -17,12 +32,9 @@ class File:
         with open(self.file_path, 'a') as f:
             f.write(line)
 
-file = "file.txt"
-obj = File(file)
-
-print(obj)
-
-obj.write('line\n')
-
-for line in obj:
-    print(line)
+# file = "file.txt"
+# obj = File(file)
+# print(obj)
+# obj.write('line\n')
+# for line in obj:
+#     print(line)
