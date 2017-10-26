@@ -1,10 +1,11 @@
 import time
 import socket
+from operator import itemgetter
 
 
 class ClientError(Exception):
-    def __init__(self, text):
-        ClientError.txt = text
+    def __init__(self, text=None):
+        print("Client error: ", text)
 
 
 class Client:
@@ -15,35 +16,48 @@ class Client:
 
     def server_connect(self, message):
         with socket.create_connection((self.host, self.port),self.timeout) as s:
+            print("Established connection with the server.")
             try:
                 s.sendall(message)
-                s.timeout(1)
                 data = s.recv(1024)
+                return data.decode("utf8")
             except socket.timeout:
                 print("send data timeout")
             except socket.error as ex:
-                print("send data error:", ex)
-            return data.decode("utf8")
+                raise ClientError(ex)
 
 
-    def put(self, key, value, timestamp=None):
-
+    def put(self, metric, value, timestamp=None):
         if timestamp == None:
             timestamp = str(int(time.time()))
-        message = "put {0} {1} {2}\n\n".format(key, value, timestamp)
-        data = self.server_coonect(message)
-        if data != "ok\n\n":
-            raise ClientError
+        message = f"put {metric} {value} {timestamp}\n"
+        data = self.server_connect(message)
+
 
     def get(self, value):
-        message = "get {0}\n".format(value)
-        data = self.server_coonect(message)
-        if data == "ok\n\n":
+        message = "get {0}\n".format(value).encode("utf-8")
+        responce = self.server_connect(message)
+        if responce == "ok\n\n":
             return {}
-        return data
+        else:
+            return self.update_data(responce)
 
-        # Клиент получает данные в текстовом виде, метод get должен возвращать словарь с полученными ключами с сервера.
-        # Значением ключа в словаре является список кортежей[(timestamp, metric_value), ...], отсортированный
-        # по timestamp от меньшего к большему.
-        # Значение timestamp должно быть преобразовано к целому числу int.
-        # Значение метрики metric_value нужно преобразовать к числу с плавающей точкой float.
+
+    def update_data(self,raw_data):
+        data_dic = {}
+        data_list = [l.split() for l in raw_data[4:-4].split("\n")]
+        print(data_list)
+        try:
+            for section in data_list:
+                if section[0] in data_dic:
+                    data_dic[section[0]] = data_dic[section[0]] + [(section[2], section[1])]
+                else:
+                    data_dic[section[0]] = [(section[2], section[1])]
+
+            for key, value in data_dic.items():
+                value.sort(key=itemgetter(1))
+
+            return data_dic
+        except:
+            print(raw_data)
+
