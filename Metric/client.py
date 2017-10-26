@@ -16,11 +16,10 @@ class Client:
 
     def server_connect(self, message):
         with socket.create_connection((self.host, self.port),self.timeout) as s:
-            print("Established connection with the server.")
             try:
                 s.sendall(message)
                 data = s.recv(1024)
-                return data.decode("utf8")
+                return data
             except socket.timeout:
                 print("send data timeout")
             except socket.error as ex:
@@ -36,28 +35,34 @@ class Client:
 
     def get(self, value):
         message = "get {0}\n".format(value).encode("utf-8")
-        responce = self.server_connect(message)
-        if responce == "ok\n\n":
+        response = self.server_connect(message)
+        if response == "ok\n\n":
             return {}
         else:
-            return self.update_data(responce)
+            r = self.update_data(response)
+            print("Client side:", r)
+            return r
 
 
     def update_data(self,raw_data):
         data_dic = {}
-        data_list = [l.split() for l in raw_data[4:-4].split("\n")]
-        print(data_list)
+        data = raw_data.decode("utf8")[3:-2].split("\n")
+        data_list = [l.split() for l in data]
+        for item in data_list:
+            print(item[0], " * ", item[1], " * ",item[2])
         try:
-            for section in data_list:
-                if section[0] in data_dic:
-                    data_dic[section[0]] = data_dic[section[0]] + [(section[2], section[1])]
+            for item in data_list:
+                key, v, t = item
+                t = int(t)
+                v = float(v)
+                if key in data_dic:
+                    data_dic[key] = data_dic[key] + [(t, v)]
                 else:
-                    data_dic[section[0]] = [(section[2], section[1])]
+                    data_dic[key] = [(t, v)]
 
             for key, value in data_dic.items():
-                value.sort(key=itemgetter(1))
-
-            return data_dic
-        except:
-            print(raw_data)
-
+                value.sort(key=itemgetter(0))
+        except ClientError:
+            print("Something wrong")
+        print("$$$$$$$$$$$$$$$$$$$$$$   Data Dic: ", data_dic)
+        return data_dic

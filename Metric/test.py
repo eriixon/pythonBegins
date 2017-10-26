@@ -1,6 +1,7 @@
 from operator import itemgetter
 
-data = "palm.cpu 0.5 1150864247\npalm.cpu 0.5 1150864248\neardrum.cpu 3.0 1150864250\neardrum.cpu 4.0 1150864251\neardrum.memory 4200000.0 1503320872"
+data = b"palm.cpu 0.5 1150864247\npalm.cpu 0.5 1150864248\neardrum.cpu 3.0 1150864250\neardrum.cpu 4.0 1150864251\neardrum.memory 4200000.0 1503320872"
+data = data.decode("utf8")
 data_list = [l.split() for l in data.split("\n")]
 print(data_list)
 
