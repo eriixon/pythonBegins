@@ -50,6 +50,15 @@ class ServerSocket:
                         b'test 0.4 2\n'
                         b'load 301 3\n\n',
         }
+    def run_server(host, port):
+        
+
+
+
+
+
+
+
 
     def sendall(self, data):
         return self.send(data)
