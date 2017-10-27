@@ -113,7 +113,6 @@ class TestClient(unittest.TestCase):
     @patch("socket.create_connection", ServerSocket.create_connection)
     @patch("socket.socket", ServerSocket.create_connection)
     def test_client_get_key(self):
-        print("****** Test KEY ********\n")
         try:
             rsp = self.client.get("test")
             print(f"**Response from client for get 'test': {rsp}")
@@ -124,7 +123,6 @@ class TestClient(unittest.TestCase):
 
         metrics_fixture = {"test": [(1, .5), (2, .4)],}
         self.assertEqual(rsp, metrics_fixture)
-        print("********************************************\n")
 
 #############################################################################################################
     @patch("socket.create_connection", ServerSocket.create_connection)
@@ -139,33 +137,31 @@ class TestClient(unittest.TestCase):
             message = exp.args[0]
             self.fail(f"Ошибка вызова client.get('*')\n{message}")
 
-        metrics_fixture = {
-            "test": [(1, .5), (2, .4)],
-            "load": [(3, 301.0)]
-        }
+        metrics_fixture = {"test": [(1, .5), (2, .4)],"load": [(3, 301.0)]}
         self.assertEqual(rsp, metrics_fixture)
-        print("********************************************\n")
+        print("********* End Test All ********************\n")
 #############################################################################################################
     @patch("socket.create_connection", ServerSocket.create_connection)
     @patch("socket.socket", ServerSocket.create_connection)
     def test_client_get_not_exists(self):
+        print("********* GET TEST NOT EXIST ********************\n")
         try:
             rsp = self.client.get("key_not_exists")
             print(f"**Response from client for get 'not exist': {rsp}")
-            print("********************************************\n")
         except ServerSocketException as exp:
             message = exp.args[0]
             self.fail(f"Ошибка вызова client.get('key_not_exists')\n{message}")
 
         self.assertEqual({}, rsp, "check rsp eq {}")
-
+        print("********* End Test Not Exist ********************\n")
 #############################################################################################################
     @patch("socket.create_connection", ServerSocket.create_connection)
     @patch("socket.socket", ServerSocket.create_connection)
     def test_client_get_client_error(self):
+        print("********* GET TEST ERROR ********************\n")
         try:
             self.assertRaises(ClientError,self.client.get, "get_client_error")
-            print("********************************************\n")
         except ServerSocketException as exp:
             message = exp.args[0]
             self.fail(f"Некорректно обработано сообщение сервера об ошибке: {message}")
+            print("********* End Test Error ********************\n")

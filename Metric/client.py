@@ -23,13 +23,13 @@ class Client:
             except socket.timeout:
                 print("send data timeout")
             except socket.error as ex:
-                raise ClientError(ex)
+                raise ClientError("Server Error")
 
 
     def put(self, metric, value, timestamp=None):
         if timestamp == None:
             timestamp = str(int(time.time()))
-        message = f"put {metric} {value} {timestamp}\n"
+        message = "put {0} {1} {2}\n".format(metric, value, timestamp).encode("utf-8")
         data = self.server_connect(message)
 
 
@@ -39,30 +39,30 @@ class Client:
         if response == "ok\n\n":
             return {}
         else:
-            r = self.update_data(response)
-            print("Client side:", r)
-            return r
+            return self.update_data(response)
 
 
     def update_data(self,raw_data):
         data_dic = {}
         data = raw_data.decode("utf8")[3:-2].split("\n")
         data_list = [l.split() for l in data]
-        for item in data_list:
-            print(item[0], " * ", item[1], " * ",item[2])
         try:
-            for item in data_list:
-                key, v, t = item
-                t = int(t)
-                v = float(v)
-                if key in data_dic:
-                    data_dic[key] = data_dic[key] + [(t, v)]
-                else:
-                    data_dic[key] = [(t, v)]
-
-            for key, value in data_dic.items():
-                value.sort(key=itemgetter(0))
-        except ClientError:
+            if data[0] == "":
+                return {}
+            else:
+                for item in data_list:
+                    key, v, t = item
+                    t = int(t)
+                    v = float(v)
+                    if key in data_dic:
+                        data_dic[key] = data_dic[key] + [(t, v)]
+                    else:
+                        data_dic[key] = [(t, v)]
+                for key, value in data_dic.items():
+                    value.sort(key=itemgetter(0))
+        except ValueError:
+            raise ClientError("Mertic is not exist")
+            return {}
+        except Exception:
             print("Something wrong")
-        print("$$$$$$$$$$$$$$$$$$$$$$   Data Dic: ", data_dic)
         return data_dic
