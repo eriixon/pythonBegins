@@ -25,13 +25,11 @@ class Client:
             except socket.error as ex:
                 raise ClientError("Server Error")
 
-
     def put(self, metric, value, timestamp=None):
         if timestamp == None:
             timestamp = str(int(time.time()))
         message = "put {0} {1} {2}\n".format(metric, value, timestamp).encode("utf-8")
         data = self.server_connect(message)
-
 
     def get(self, value):
         message = "get {0}\n".format(value).encode("utf-8")
@@ -40,7 +38,6 @@ class Client:
             return {}
         else:
             return self.update_data(response)
-
 
     def update_data(self,raw_data):
         data_dic = {}
@@ -66,3 +63,13 @@ class Client:
         except Exception:
             print("Something wrong")
         return data_dic
+
+client = Client("127.0.0.1", 8181, timeout=5)
+client.put("test", 0.5, timestamp=1)
+client.put("test", 0.5, timestamp=2)
+client.put("test1", 0.5, timestamp=1)
+# client.put("test", 2.0, timestamp=2)
+# client.put("test", 0.5, timestamp=3)
+# client.put("load", 3, timestamp=4)
+# client.put("load", 4, timestamp=5)
+#print(client.get("*"))

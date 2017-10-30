@@ -4,7 +4,8 @@ import time
 
 class ClientError(Exception):
     """Общий класс исключений клиента"""
-    pass
+    def __init__(self, text=None):
+        print("Client error: ", text)
 
 
 class ClientSocketError(ClientError):
@@ -14,7 +15,8 @@ class ClientSocketError(ClientError):
 
 class ClientProtocolError(ClientError):
     """Исключение, выбрасываемое клиентом при ошибке протокола"""
-    pass
+    def __init__(self, text=None):
+        print("Client error: ", text)
 
 
 class Client:
@@ -99,11 +101,11 @@ class Client:
 def _main():
     # проверка работы клиента
     client = Client("127.0.0.1", 8181, timeout=5)
-    client.put("test", 0.5, timestamp=1)
-    client.put("test", 2.0, timestamp=2)
-    client.put("test", 0.5, timestamp=3)
-    client.put("load", 3, timestamp=4)
-    client.put("load", 4, timestamp=5)
+    # client.put("test", 0.5, timestamp=1)
+    # client.put("test", 2.0, timestamp=2)
+    # client.put("test", 0.5, timestamp=3)
+    # client.put("load", 3, timestamp=4)
+    # client.put("load", 4, timestamp=5)
     print(client.get("*"))
 
     client.close()
