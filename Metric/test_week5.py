@@ -50,15 +50,6 @@ class ServerSocket:
                         b'test 0.4 2\n'
                         b'load 301 3\n\n',
         }
-    def run_server(host, port):
-        
-
-
-
-
-
-
-
 
     def sendall(self, data):
         return self.send(data)
@@ -125,7 +116,6 @@ class TestClient(unittest.TestCase):
         try:
             rsp = self.client.get("test")
             print(f"**Response from client for get 'test': {rsp}")
-            print("********************************************")
         except ServerSocketException as exp:
             message = exp.args[0]
             self.fail(f"Ошибка вызова client.get('test')\n{message}")

@@ -1,12 +1,10 @@
 import asyncio
+from collections import deque
 
 class ServerSocketException(Exception):
     pass
 
 class ClientServerProtocol(asyncio.Protocol):
-    def __init__(self):
-        self.data_store = {}
-
     def connection_made(self, transport):
         peer_name = transport.get_extra_info('peername')
         print('Connection from {}'.format(peer_name))
@@ -14,36 +12,41 @@ class ClientServerProtocol(asyncio.Protocol):
 
     def data_received(self, data):
         resp = self.process_data(data.decode())
-        #self.transport.write(resp.encode())
+        self.transport.write(resp.encode())
 
-        self.transport.write(resp)
-
-    async def process_data(self, raw_data):
-        await asyncio.sleep(1)
+    def process_data(self, raw_data):
         data = raw_data[:-1].split()
-        print(data)
         if data[0] == "get":
-            pass
+            rsp = self.read_data_db(data)
         elif data[0] == "put":
-            metric, key, value, timestamp = data
-            if key in self.data_store:
-                self.data_store[key] = self.data_store[key] + [value, timestamp]
-            else:
-                self.data_store[key] = [value, timestamp]
+            rsp = self.write_data_db(data)
         else:
             raise ServerSocketException("incorrect input")
-        print(self.data_store)
-        data1 = b"palm.cpu 0.5 1150864247\npalm.cpu 0.5 1150864248\neardrum.cpu 3.0 1150864250\neardrum.cpu 4.0 1150864251\neardrum.memory 4200000.0 1503320872\n\n"
-        return data1
+        return rsp
 
+    @staticmethod
+    def write_data_db(data):
+        with open("db.txt", 'a') as db:
+            db.write("{} {} {}\n".format(data[1], data[2], data[3]))
+        return "ok\n"
+
+    @staticmethod
+    def read_data_db(data):
+        rsp = 'ok\n'
+        with open("db.txt", 'r') as db:
+            for item in db.readlines():
+                if data[1] in item:
+                    rsp = "{0}{1}".format(rsp,item)
+            rsp = "{0}\n".format(rsp)
+        print("*****",rsp)
+        return rsp
 
 def run_server(host, port):
-
     loop = asyncio.get_event_loop()
     coro = loop.create_server(ClientServerProtocol, host, port)
 
     server = loop.run_until_complete(coro)
-    print ("Server run")
+    print("Server run")
 
     try:
         loop.run_forever()
