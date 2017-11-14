@@ -30,5 +30,10 @@ for index, line in enumerate(new_text):
         x = line.count(word)
         matrix[index,words[word]] = x
 
-z = spatial.distance.cosine(matrix[0,],matrix[1,])
-print(matrix[0,])
+r = ''
+for i in range(1,len(new_text)):
+    z = spatial.distance.cosine(matrix[0,],matrix[i,])
+    r = "{0}{1} ".format(r,z)
+r = r.strip()
+with open("first.txt",'w') as f:
+    f.write(r)
