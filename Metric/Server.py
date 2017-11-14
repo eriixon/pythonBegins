@@ -1,8 +1,11 @@
 import asyncio
-from collections import deque
+import os
+import tempfile
+
 
 class ServerSocketException(Exception):
     pass
+
 
 class ClientServerProtocol(asyncio.Protocol):
     def connection_made(self, transport):
@@ -11,41 +14,46 @@ class ClientServerProtocol(asyncio.Protocol):
         self.transport = transport
 
     def data_received(self, data):
-        resp = self.process_data(data.decode())
-        self.transport.write(resp.encode())
+        response = self.process_data(data.decode())
+        self.transport.write(response.encode())
 
     def process_data(self, raw_data):
         data = raw_data[:-1].split()
+        file = os.path.join(tempfile.gettempdir(), 'db.txt')
         if data[0] == "get":
-            rsp = self.read_data_db(data)
+            rsp = self.read_data_db(data, file)
         elif data[0] == "put":
-            rsp = self.write_data_db(data)
+            rsp = self.write_data_db(data, file)
         else:
-            raise ServerSocketException("incorrect input")
+            rsp = "error\nwrong command\n\n"
         return rsp
 
     @staticmethod
-    def write_data_db(data):
-        with open("db.txt", 'a') as db:
+    def write_data_db(data, file):
+        print("step 1")
+        with open(file, 'a') as db:
             db.write("{} {} {}\n".format(data[1], data[2], data[3]))
-        return "ok\n"
+        print("step 2")
+        return "ok\n\n"
 
     @staticmethod
-    def read_data_db(data):
+    def read_data_db(data, file):
         rsp = 'ok\n'
-        with open("db.txt", 'r') as db:
-            for item in db.readlines():
+        with open(file, 'r') as db:
+            db_data = db.readlines()
+            for item in db_data:
+                if data[1] == "*":
+                    rsp = "{0}{1}".format(rsp, item)
                 if data[1] in item:
-                    rsp = "{0}{1}".format(rsp,item)
+                    rsp = "{0}{1}".format(rsp, item)
             rsp = "{0}\n".format(rsp)
-        print("*****",rsp)
         return rsp
+
 
 def run_server(host, port):
     loop = asyncio.get_event_loop()
-    coro = loop.create_server(ClientServerProtocol, host, port)
-
-    server = loop.run_until_complete(coro)
+    work = loop.create_server(ClientServerProtocol, host, port)
+    server = loop.run_until_complete(work)
     print("Server run")
 
     try:
@@ -54,9 +62,12 @@ def run_server(host, port):
         pass
 
     server.close()
+
+    os.remove(os.path.join(tempfile.gettempdir(), 'db.txt'))
     loop.run_until_complete(server.wait_closed())
     loop.close()
 
 
-if __name__ == '__main__':
-    run_server('127.0.0.1', 8181)
+
+# if __name__ == '__main__':
+#     run_server('127.0.0.1', 8888)
